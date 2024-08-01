@@ -25,26 +25,26 @@ with open('style.css') as f:
 # Read the dataset
 data = pd.read_csv('Jumlah-2021 - 2023 -Lengkap-Dataset_Longsor - PROV JABAR.csv')  # Change path to your new dataset
 
-# Function to perform Agglomerative Hierarchical Clustering based on selected features and linkage
+# Fungsi untuk melakukan Pengelompokan Hirarki Aglomeratif berdasarkan fitur dan tautan yang dipilih
 def ahc_clustering(data, n_clusters, selected_features, linkage_method):
     features = data[selected_features + ['LATITUDE', 'LONGITUDE']]
     clusterer = AgglomerativeClustering(n_clusters=n_clusters, linkage=linkage_method)
     data['cluster'] = clusterer.fit_predict(features)
 
-    # Calculate centroid for each cluster
+    # Hitung centroid untuk setiap klaster
     centroids = data.groupby('cluster')[['JUMLAH_LONGSOR']].mean()
 
-    # Define threshold values for density categories (adjust these based on your analysis)
-    threshold_low = 10  # Example threshold for "not dense"
-    threshold_high = 101  # Example threshold for "dense"
+    # Tentukan nilai ambang batas untuk kategori tanah longsor (sesuaikan dengan analisis )
+    threshold_low = 10  # Contoh ambang batas rendah
+    threshold_high = 101  # Contoh ambang batas tinggi
 
-    # Add Landslide Category column based on quartile values
+    # Tambahkan kolom Kategori Tanah Longsor berdasarkan nilai kuartil
     data['Landslide Category'] = data.apply(lambda row: 'Tingkat Rawan Rendah' if row['JUMLAH_LONGSOR'] < threshold_low else ('Tingkat Rawan Sedang' if row['JUMLAH_LONGSOR'] < threshold_high else 'Tingkat Rawan Tinggi'), axis=1)
     
     return data
 
 
-# Function to calculate silhouette scores for a range of cluster numbers
+# Fungsi untuk menghitung skor siluet untuk berbagai nomor klaster
 def calculate_silhouette_scores(data, max_clusters=10, linkage_method='ward'):
     selected_features = ['JUMLAH_LONGSOR', 'JIWA_TERDAMPAK', 'JIWA_MENINGGAL', 'RUSAK_TERDAMPAK', 'RUSAK_RINGAN', 'RUSAK_SEDANG', 'RUSAK_BERAT', 'TERTIMBUN', 'LATITUDE', 'LONGITUDE']
     silhouette_scores = []
@@ -56,27 +56,27 @@ def calculate_silhouette_scores(data, max_clusters=10, linkage_method='ward'):
         silhouette_scores.append(silhouette_avg)
     return pd.DataFrame({'num_clusters': range(2, max_clusters + 1), 'silhouette_score': silhouette_scores})
 
-# Function to add Google Maps to Folium map
+# Fungsi untuk menambahkan Google Maps ke peta Folium
 def add_google_maps(m):
     tiles = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     attr = "Google Digital Satellite"
     folium.TileLayer(tiles=tiles, attr=attr, name=attr, overlay=True, control=True).add_to(m)
 
-    # Add labels for streets and objects
+    # Menambahkan label untuk jalan dan objek
     label_tiles = "https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}"
     label_attr = "Google Labels"
     folium.TileLayer(tiles=label_tiles, attr=label_attr, name=label_attr, overlay=True, control=True).add_to(m)
 
     return m
 
-# Function to create Folium map with clustered markers
+# Fungsi untuk membuat peta Folium dengan penanda berkelompok
 def create_marker_map(df_clustered, selected_kabupaten, scaled_data):
-    # Set the width and height directly when creating the Folium map
+    # Atur lebar dan tinggi secara langsung saat membuat peta Folium
     m = folium.Map(location=[df_clustered['LATITUDE'].mean(), df_clustered['LONGITUDE'].mean()], zoom_start=8, width=1240, height=600)
 
-    # Add a marker for each data point
+    # Tambahkan penanda untuk setiap titik data
     for i, row in df_clustered.iterrows():
-        # Customize popup content
+        # Menyesuaikan konten popup
         popup_content = f"""
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <div style='width:400px; height:300px;'>
@@ -106,7 +106,7 @@ def create_marker_map(df_clustered, selected_kabupaten, scaled_data):
         folium.Marker(
             location=[row['LATITUDE'], row['LONGITUDE']],
             tooltip=row['KABUPATEN'],
-            icon=icon,  # Use the defined icon variable
+            icon=icon,  # Gunakan variabel ikon yang ditentukan
         ).add_to(m).add_child(folium.Popup(popup_content, max_width=1240))
 
     # Heatmap Layer
@@ -123,31 +123,31 @@ def create_marker_map(df_clustered, selected_kabupaten, scaled_data):
     return m
 
 
-# Function to handle Agglomerative Hierarchical Clustering page
+# Fungsi untuk menangani halaman Pengelompokan Hirarki Aglomeratif
 def ahc_page():
     center = True
     st.header("Agglomerative Hierarchical Clustering Page", anchor='center' if center else 'left')
 
-    # Sidebar: Choose the number of clusters
+    # Sidebar: Memilih jumlah cluster
     num_clusters = st.sidebar.slider("Number of Clusters", min_value=2, max_value=10, value=3)
 
-    # Sidebar: Choose the linkage method
+    # Sidebar: Pilih metode penautan
     linkage_method = st.sidebar.selectbox('Select Linkage Method', ['single', 'average', 'complete'])
 
     # Read the dataset
     data = pd.read_csv('Jumlah-2021 - 2023 -Lengkap-Dataset_Longsor - PROV JABAR.csv')  # Change path to your new dataset
 
-    # Dropdown for selecting the KABUPATEN
+    # Dropdown untuk memilih KABUPATEN
     selected_kabupaten = st.sidebar.selectbox('Select Kabupaten', data['KABUPATEN'].unique())
 
-    # Calculate Silhouette Scores for a range of clusters
+    # Hitung Skor Siluet untuk berbagai kelompok
     silhouette_scores_df = calculate_silhouette_scores(data, max_clusters=10, linkage_method=linkage_method)
     
-    # Perform Agglomerative Hierarchical Clustering based on selected features and linkage method
+    # Lakukan Pengelompokan Hirarki Aglomeratif berdasarkan fitur yang dipilih dan metode tautan
     if len(data) >= 2:
         df_clustered = ahc_clustering(data, num_clusters, [], linkage_method)  # Empty list for selected_features
     else:
-        # Handle the case when there are not enough data points for clustering
+        # Menangani kasus ketika tidak ada cukup titik data untuk pengelompokan
         st.warning("Not enough data points for clustering. Please select different criteria.")
         return
 
@@ -155,7 +155,7 @@ def ahc_page():
     scaler = StandardScaler()
     scaled_features = scaler.fit_transform(data[['JUMLAH_LONGSOR', 'JIWA_TERDAMPAK', 'JIWA_MENINGGAL', 'RUSAK_TERDAMPAK', 'RUSAK_RINGAN', 'RUSAK_SEDANG', 'RUSAK_BERAT', 'TERTIMBUN', 'LATITUDE', 'LONGITUDE']])
     
-    # Save the scaled features in session_state
+    # Simpan fitur yang diskalakan di session_state
     st.session_state.scaled_features = scaled_features
     st.session_state.df_clustered = df_clustered
     st.session_state.selected_kabupaten = selected_kabupaten
@@ -165,12 +165,12 @@ def ahc_page():
     tab1, tab2, tab3 = st.tabs(["DATASET", "VISUALISASI MAP", "SILHOUETTE SCORE"])
 
     with tab1:
-        # Display metrics for each cluster
-        # Display metrics for each cluster
+        # Menampilkan metrik untuk setiap klaster
+       
         for cluster_num in range(num_clusters):
             landslide_category = df_clustered.loc[df_clustered['cluster'] == cluster_num, 'Landslide Category'].iloc[0]
             
-            # Add a new column for index
+           # Menambahkan kolom baru untuk indeks
             cluster_data = df_clustered[df_clustered['cluster'] == cluster_num].reset_index(drop=True)
             cluster_data.insert(1, "Index", cluster_data.index)  # Add index column
             
@@ -196,14 +196,14 @@ def ahc_page():
 
     with tab2:
         with st.expander('Kabupaten/Kota Maps View Analitycs Clustering', expanded=True):
-            # Use folium_static to display the Folium map
+            # Gunakan folium_static untuk menampilkan peta Folium
             folium_map = create_marker_map(st.session_state.df_clustered, st.session_state.selected_kabupaten, st.session_state.scaled_features)
             folium_static(folium_map, width=1240, height=600)
             
         with st.expander("SELECT DATA"):
             selected_city = st.selectbox("Select ", df_clustered['KABUPATEN'])
             selected_row = df_clustered[df_clustered['KABUPATEN'] == selected_city].squeeze()
-            # Display additional information in a table
+            # Menampilkan informasi tambahan dalam tabel
             st.table(selected_row)
             
             # Graphs
@@ -222,7 +222,7 @@ def ahc_page():
         with col3:
              with st.container(border=True):
                 st.write("Scatter Plot:")
-                # Assuming 'LATITUDE' and 'LONGITUDE' are the columns you want to use for the scatter plot
+                # Asumsikan 'LATITUDE' dan 'LONGITUDE' adalah kolom yang ingin Anda gunakan untuk scatter plot
                 scatter_fig = px.scatter(st.session_state.df_clustered, x='LATITUDE', y='LONGITUDE', color='cluster', title='Scatter Plot')
                 st.plotly_chart(scatter_fig, use_container_width=True)
 

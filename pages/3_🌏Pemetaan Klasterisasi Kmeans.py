@@ -8,33 +8,33 @@ from sklearn.metrics import silhouette_score
 import plotly.express as px
 from streamlit_folium import folium_static
 
-# Set page configuration
+# Mengatur konfigurasi halaman
 st.set_page_config(
     page_title="KMeans Clustering and Visualization",
-    layout="wide",  # Set layout to wide for full-width content
-    initial_sidebar_state="collapsed",  # Collapse the sidebar by default
+    layout="wide",  # Atur tata letak ke lebar untuk konten dengan lebar penuh
+    initial_sidebar_state="collapsed",  # Menciutkan bilah samping secara default
 )
 
-# Function to load data
+# Fungsi untuk memuat data
 @st.cache_data
 def load_data(file_path):
     data = pd.read_csv("Jumlah-2021 - 2023 -Lengkap-Dataset_Longsor - PROV JABAR.csv")
     return data
 
-# Function to perform KMeans clustering and calculate Silhouette Score
+# Fungsi untuk melakukan pengelompokan KMeans dan menghitung Skor Siluet
 def kmeans_clustering(data, num_clusters):
     features = data[['JUMLAH_LONGSOR', 'JIWA_TERDAMPAK', 'JIWA_MENINGGAL', 'RUSAK_TERDAMPAK', 'RUSAK_RINGAN', 'RUSAK_SEDANG', 'RUSAK_BERAT', 'TERTIMBUN', 'LATITUDE', 'LONGITUDE']]
     kmeans = KMeans(n_clusters=num_clusters, random_state=42)
     data['cluster'] = kmeans.fit_predict(features)
     
-    # Calculate centroid for each cluster
+    # Hitung centroid untuk setiap klaster
     centroids = data.groupby('cluster')[['JUMLAH_LONGSOR']].mean()
 
-    # Define threshold values for density categories (adjust these based on your analysis)
-    threshold_low = 10  # Example threshold for "not dense"
-    threshold_high = 101  # Example threshold for "dense"
+    # Tentukan nilai ambang batas untuk kategori tanah longsor (sesuaikan dengan analisis Anda)
+    threshold_low = 10  # Contoh ambang batas untuk “tidak padat”
+    threshold_high = 101  # Contoh ambang batas untuk “padat”
 
-    # Add Density Category column based on centroid values
+    # Tambahkan kolom Kategori Tanah Longsor berdasarkan nilai centroid
     data['Landslide Category'] = data['cluster'].map(lambda cluster: 'Tingkat Rawan Rendah' if centroids.loc[cluster].mean() < threshold_low else ('Tingkat Rawan Sedang' if centroids.loc[cluster].mean() < threshold_high else 'Tingkat Rawan Tinggi'))
     
     # Elbow Method data
@@ -43,7 +43,7 @@ def kmeans_clustering(data, num_clusters):
     
     return data, elbow_data
 
-# Function to calculate silhouette scores for a range of cluster numbers
+# Fungsi untuk menghitung skor siluet untuk berbagai nomor klaster
 def calculate_silhouette_scores(data, max_clusters=10):
     features = data[['JUMLAH_LONGSOR', 'JIWA_TERDAMPAK', 'JIWA_MENINGGAL', 'RUSAK_TERDAMPAK', 'RUSAK_RINGAN', 'RUSAK_SEDANG', 'RUSAK_BERAT', 'TERTIMBUN', 'LATITUDE', 'LONGITUDE']]
     silhouette_scores = []
@@ -54,13 +54,13 @@ def calculate_silhouette_scores(data, max_clusters=10):
         silhouette_scores.append(silhouette_avg)
     return pd.DataFrame({'num_clusters': range(2, max_clusters + 1), 'silhouette_score': silhouette_scores})
 
-# Function to add Google Maps to Folium map
+# Fungsi untuk menambahkan Google Maps ke peta Folium
 def add_google_maps(m):
     tiles = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     attr = "Google Digital Satellite"
     folium.TileLayer(tiles=tiles, attr=attr, name=attr, overlay=True, control=True).add_to(m)
 
-    # Add labels for streets and objects
+    # Menambahkan label untuk jalan dan objek
     label_tiles = "https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}"
     label_attr = "Google Labels"
     folium.TileLayer(tiles=label_tiles, attr=label_attr, name=label_attr, overlay=True, control=True).add_to(m)
@@ -68,12 +68,12 @@ def add_google_maps(m):
     return m
 
 def create_marker_map(df_clustered):
-    # Set the width and height directly when creating the Folium map
+    # Atur lebar dan tinggi secara langsung saat membuat peta Folium
     m = folium.Map(location=[df_clustered['LATITUDE'].mean(), df_clustered['LONGITUDE'].mean()], zoom_start=10, width=1240, height=600)
 
-    # Add a marker for each data point
+    # Tambahkan penanda untuk setiap titik data
     for i, row in df_clustered.iterrows():
-        # Customize popup content
+        # Menyesuaikan konten popup
         popup_content = f"""
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <div style='width:400px; height:300px;'>
@@ -144,24 +144,24 @@ def display_clustering_summary(df_clustered, num_clusters):
         
         st.info(summary)
 
-# Function to handle KMeans page
+# Fungsi untuk menangani halaman KMeans
 def kmeans_page():
     st.header("KMeans Clustering Page", anchor='center')
 
 
-    # Sidebar: Choose the number of clusters
+    # Bilah samping: Memilih jumlah cluster
     num_clusters = st.sidebar.slider("Number of Clusters", min_value=2, max_value=10, value=2)
 
-    # Load data from the home page
+    # Memuat data dari halaman beranda
     data_from_homepage = load_data('Jumlah-2021 - 2023 -Lengkap-Dataset_Longsor - PROV JABAR.csv')  # Replace with your actual data file path
 
-    # Perform KMeans clustering
+    # Lakukan pengelompokan KMeans
     df_clustered, elbow_data = kmeans_clustering(data_from_homepage, num_clusters)
    
-    # Calculate Silhouette Scores for a range of clusters
+    # Hitung Skor Siluet untuk berbagai kelompok
     silhouette_scores_df = calculate_silhouette_scores(data_from_homepage)
 
-    # Save the clustered data in session_state
+    # Simpan data yang dikelompokkan di session_state
     st.session_state.df_clustered = df_clustered
     st.session_state.elbow_data = elbow_data
     st.session_state.silhouette_scores_df = silhouette_scores_df
@@ -169,11 +169,11 @@ def kmeans_page():
     tab1, tab2, tab3 = st.tabs(["DATASET", "VISUALISASI MAP", "SILHOUETTE SCORE"])
     
     with tab1:
-        # Display metrics for each cluster
+        # Menampilkan metrik untuk setiap klaster
         for cluster_num in range(num_clusters):
             landslide_category = df_clustered.loc[df_clustered['cluster'] == cluster_num, 'Landslide Category'].iloc[0]
             
-            # Add a new column for index
+            # Menambahkan kolom baru untuk indeks
             cluster_data = df_clustered[df_clustered['cluster'] == cluster_num].reset_index(drop=True)
             cluster_data.insert(1, "Index", cluster_data.index)  # Add index column
             
@@ -197,14 +197,14 @@ def kmeans_page():
 
     with tab2:
         with st.expander('Kabupaten/Kota View Analitycs Clustering', expanded=True):
-            # Use folium_static to display the Folium map
+            # Gunakan folium_static untuk menampilkan peta Folium
             folium_map = create_marker_map(st.session_state.df_clustered)
             folium_static(folium_map, width=1240, height=600)
 
         with st.expander("SELECT DATA"):
             selected_city = st.selectbox("Select ", df_clustered['KABUPATEN'])
             selected_row = df_clustered[df_clustered['KABUPATEN'] == selected_city].squeeze()
-            # Display additional information in a table
+               # Menampilkan informasi tambahan dalam tabel
             st.table(selected_row)
         # Graphs
         col1, col2, col3, col4 = st.columns(4)
@@ -238,7 +238,7 @@ def kmeans_page():
                 )
                 st.plotly_chart(fig_elbow, use_container_width=True)
                 
-            # Call the function to display the summary after clustering
+            # Panggil fungsi untuk menampilkan ringkasan setelah pengelompokan
         display_clustering_summary(df_clustered, num_clusters)
 
     with tab3:

@@ -13,7 +13,7 @@ from folium import plugins
 from folium.plugins import HeatMap
 import plotly_express as px
 
-# Set page configuration
+# Mengatur konfigurasi halaman
 st.set_page_config(
     page_title="Dashboard",
     page_icon="📈",
@@ -26,7 +26,7 @@ with open('style.css') as f:
 st.header("ALGORITMA AGGLOMERATIVE HIERARCHICAL CLUSTERING (AHC)")
 
 
-# Explanation of AHC
+# Penjelasan tentang AHC
 st.markdown(
 """
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -52,7 +52,7 @@ st.markdown(
 # Read data
 df = pd.read_csv("Jumlah-2021 - 2023 -Lengkap-Dataset_Longsor - PROV JABAR.csv")
 
-# Select features for clustering
+# Memilih fitur untuk pengelompokan
 features_ahc = df[
     [
         'JUMLAH_LONGSOR',
@@ -250,8 +250,8 @@ with c3:
       
    
 
-# Assuming X_ahc is already defined
-# Your clustering and silhouette score calculation code
+# Dengan asumsi X_ahc sudah didefinisikan
+# Kode penghitungan skor pengelompokan dan siluet Anda
 silhouette_scores_single = []
 silhouette_scores_complete = []
 silhouette_scores_average = []

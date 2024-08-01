@@ -25,25 +25,25 @@ st.title('ANALISIS PENGELOMPOKKAN DAERAH RAWAN BENCANA TANAH LONGSOR KABUPATEN/K
 st.divider()
 
 
-# Load your DataFrame from DATA_JABAR.csv
+# Muat DataFrame Anda dari DATA_JABAR.csv
 file_path = 'UPDATE-Selection-Dataset_Longsor 2021 - 2023 - PROV JABAR.csv'
 df = pd.read_csv(file_path)
 
-# Sidebar for selecting the year
+# Sidebar untuk memilih tahun
 selected_year = st.sidebar.slider('Select Year', min_value=df['TAHUN'].min(), max_value=df['TAHUN'].max(), value=df['TAHUN'].max(), step=1)
 
-# Dropdown for selecting the KABUPATEN
+# Dropdown untuk memilih KABUPATEN
 selected_kabupaten = st.sidebar.selectbox('Select Kabupaten', df['KABUPATEN'].unique())
 
-# Filter dataframe for the selected year and KABUPATEN
+# Filter bingkai data untuk tahun yang dipilih dan KABUPATEN
 df_filtered_year = df[df['TAHUN'] == selected_year]
 df_filtered_kabupaten = df_filtered_year[df_filtered_year['KABUPATEN'] == selected_kabupaten]
 
-# Create a map with a unique key based on the selected year
+# Membuat peta dengan kunci unik berdasarkan tahun yang dipilih
 m = folium.Map(location=[df['LATITUDE'].mean(), df['LONGITUDE'].mean()], zoom_start=8, key=f"map-{selected_year}", width='100%')
 
 
-# Add a marker for each data point
+# Tambahkan penanda untuk setiap titik data
 for i, row in df[df['TAHUN'] == selected_year].iterrows():
     popup_content = f"""
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -121,7 +121,7 @@ def add_google_maps(m):
     return m
 
 
-# Function for creating a heatmap with color theme selection
+# Fungsi untuk membuat peta panas dengan pemilihan tema warna
 def make_heatmap(input_df, input_y, input_x, input_color, input_color_theme):
     heatmap = alt.Chart(input_df).mark_rect().encode(
         y=alt.Y(f'{input_y}:O', axis=alt.Axis(title="TAHUN", titleFontSize=18, titlePadding=15, titleFontWeight=900, labelAngle=0)),
@@ -142,7 +142,7 @@ def make_heatmap(input_df, input_y, input_x, input_color, input_color_theme):
 def format_number(num):
     return "{:,}".format(num)
 
-# Fungsi perhitungan migrasi penduduk tahun ke tahun
+# Fungsi perhitungan bencana tanah longsor tahun ke tahun
 def calculate_population_difference(input_df, input_year):
     selected_year_data = input_df[input_df['TAHUN'] == input_year].reset_index()
     previous_year_data = input_df[input_df['TAHUN'] == input_year - 1].reset_index()
@@ -186,8 +186,8 @@ with a3:
     else:
         st.metric(label="-", value="-", delta="")
 
-# Main Dashboard Panel
-# Create columns with a specified width ratio
+# Panel Dasbor Utama
+# Membuat kolom dengan rasio lebar tertentu
 col1, col2 = st.columns((5, 2), gap='medium')
 
 with col1:
@@ -197,13 +197,13 @@ with col1:
 
 
 with col2:
-    # Filter the dataframe based on the selected year
+    # Memfilter bingkai data berdasarkan tahun yang dipilih
     df_filtered = df[df['TAHUN'] == selected_year]
     
-    # Sort the filtered dataframe by the number of landslides
+    # Urutkan bingkai data yang telah difilter berdasarkan jumlah tanah longsor
     df_landslide_sorted = df_filtered.sort_values(by="JUMLAH_LONGSOR", ascending=False)
     
-    # Drop the LATITUDE and LONGITUDE columns for display purposes
+    # Hapus kolom LATITUDE dan LONGITUDE untuk tujuan tampilan
     df_landslide_sorted_no_geom = df_landslide_sorted.drop(columns=['LATITUDE', 'LONGITUDE'])
 
     # Display the dataframe

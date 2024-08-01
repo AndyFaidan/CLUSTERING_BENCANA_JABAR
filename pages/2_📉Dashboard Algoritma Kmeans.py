@@ -108,7 +108,7 @@ with c3:
 with st.expander("⬇ EKSPLORASI VARIABEL:"):
     st.subheader("Korelasi antara Variabel")
     
-    # Ganti df_selection dengan dataframe yang ingin Anda gunakan
+    # Ganti df_selection dengan dataframe yang ingin digunakan
     selected_features = ['JUMLAH_LONGSOR', 'JIWA_TERDAMPAK', 'JIWA_MENINGGAL', 'RUSAK_TERDAMPAK', 'RUSAK_RINGAN', 'RUSAK_SEDANG', 'RUSAK_BERAT','TERTIMBUN']
     
     # Hitung matriks korelasi
@@ -199,7 +199,7 @@ with c3:
         best_silhouette_score = max(silhouette_scores)
         st.write(f"Silhouette Score tertinggi: {best_silhouette_score}")
 
-# Display the scatter plot using Plotly Express
+# Menampilkan plot sebaran menggunakan Plotly Express
 with st.expander("⬇ CLUSTER VISUALIZATION"):
     fig = px.scatter(df, x='LONGITUDE', y='LATITUDE', color='Cluster',
                  title="Clusters of Regions", labels={'LONGITUDE': 'LONGITUDE', 'LATITUDE': 'LATITUDE'},
